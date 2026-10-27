@@ -84,3 +84,13 @@ body {
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite ease-in-out;
 }
+
+/* Hide Scrollbar for Horizontal Action Toolbar */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

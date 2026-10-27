@@ -1229,6 +1229,22 @@ btnCancelEdit.onclick = () => {
     }
 };
 
+// Event click tombol Batal dan Simpan khusus tampilan mobile
+const btnSaveItemMobile = document.getElementById("btnSaveItemMobile");
+const btnCancelEditMobile = document.getElementById("btnCancelEditMobile");
+
+if (btnSaveItemMobile) {
+    btnSaveItemMobile.onclick = () => {
+        itemForm.requestSubmit();
+    };
+}
+
+if (btnCancelEditMobile) {
+    btnCancelEditMobile.onclick = () => {
+        btnCancelEdit.click();
+    };
+}
+
 /**
  * Modern Iconic Action Loading Controller
  */

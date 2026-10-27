@@ -232,11 +232,11 @@
                 <div id="itemList" class="flex-1 overflow-y-auto p-2.5 space-y-2"></div>
             </aside>
 
-            <!-- Right Detail / Editor Pane -->
+            <!-- RIGHT PANEL: Credential Viewer / Editor (Mobile Friendly) -->
             <section id="detailPane"
-                class="hidden md:flex flex-1 bg-surface border border-borderHairline rounded-2xl p-5 sm:p-6 flex-col justify-between overflow-y-auto h-[82vh]">
+                class="hidden md:flex flex-1 bg-surface border border-borderHairline rounded-2xl p-3.5 sm:p-5 flex-col justify-between overflow-y-auto min-h-[calc(100dvh-130px)] md:h-[82vh]">
                 <!-- Empty State -->
-                <div id="emptyView" class="h-full flex flex-col items-center justify-center text-slate-500">
+                <div id="emptyView" class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
                     <div
                         class="w-16 h-16 rounded-2xl bg-canvas border border-borderHairline flex items-center justify-center text-2xl text-slate-600 mb-3">
                         <i class="fa-solid fa-vault"></i>
@@ -252,52 +252,72 @@
                     <input type="hidden" id="isArchivedState" value="false">
 
                     <div>
-                        <!-- Header Form -->
-                        <div class="flex items-center justify-between border-b border-borderHairline pb-3 mb-4">
-                            <div class="flex items-center space-x-2">
-                                <button type="button" id="btnBackToList"
-                                    class="md:hidden text-slate-400 hover:text-white pr-2">
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </button>
-                                <div class="flex items-center gap-2.5">
-                                    <div id="formIconContainer"
-                                        class="w-8 h-8 rounded-xl bg-canvas border border-borderHairline flex items-center justify-center text-sm">
-                                        <img id="formFavicon" src="" alt=""
-                                            class="w-5 h-5 rounded object-contain hidden">
-                                        <i id="formTypeIcon" class="fa-solid fa-globe text-skyAction"></i>
+                        <!-- Responsive Header Form: Split between Title Row & Action Row on Mobile -->
+                        <div class="border-b border-borderHairline pb-3 mb-4 space-y-3">
+                            <!-- Row 1: Nav Back & Title Badge -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2.5 min-w-0">
+                                    <button type="button" id="btnBackToList"
+                                        class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg hover:bg-surfaceElevated transition">
+                                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                                    </button>
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div id="formIconContainer"
+                                            class="w-8 h-8 rounded-xl bg-canvas border border-borderHairline flex items-center justify-center text-sm shrink-0">
+                                            <img id="formFavicon" src="" alt=""
+                                                class="w-5 h-5 rounded object-contain hidden">
+                                            <i id="formTypeIcon" class="fa-solid fa-globe text-skyAction"></i>
+                                        </div>
+                                        <div class="truncate">
+                                            <h2 id="formTitle"
+                                                class="font-bold text-sm sm:text-base text-white truncate">Detail Item
+                                            </h2>
+                                            <span id="formSubInfo"
+                                                class="text-[10px] text-emeraldBright font-mono block">● AES-256-GCM
+                                                Encrypted</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 id="formTitle" class="font-bold text-base text-white">Detail Item</h2>
-                                        <span id="formSubInfo" class="text-[10px] text-emeraldBright font-mono">●
-                                            AES-256-GCM Encrypted</span>
-                                    </div>
+                                </div>
+
+                                <!-- Quick Save Button for Mobile Right Top -->
+                                <div class="flex items-center gap-1.5 md:hidden">
+                                    <button type="button" id="btnCancelEditMobile"
+                                        class="text-xs bg-surfaceElevated text-slate-300 border border-borderHairline px-2.5 py-1.5 rounded-lg">
+                                        Batal
+                                    </button>
+                                    <button type="button" id="btnSaveItemMobile"
+                                        class="text-xs bg-emeraldAccent text-slate-950 font-bold px-3 py-1.5 rounded-lg shadow">
+                                        Simpan
+                                    </button>
                                 </div>
                             </div>
 
-                            <div class="flex items-center space-x-2">
+                            <!-- Row 2: Action Button Toolbar (Horizontal Scroll on Mobile, Flex End on Desktop) -->
+                            <div
+                                class="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar md:justify-end">
                                 <button type="button" id="btnAutofillTop"
-                                    class="text-xs bg-skyAction/10 hover:bg-skyAction/20 text-skyAction border border-skyAction/30 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Autofill
+                                    class="text-xs whitespace-nowrap bg-skyAction/10 hover:bg-skyAction/20 text-skyAction border border-skyAction/30 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>Autofill</span>
                                 </button>
                                 <button type="button" id="btnCloneItem"
-                                    class="text-xs bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-                                    <i class="fa-regular fa-clone"></i> Clone
+                                    class="text-xs whitespace-nowrap bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-regular fa-clone"></i> <span>Clone</span>
                                 </button>
                                 <button type="button" id="btnArchiveToggle"
-                                    class="text-xs bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                    class="text-xs whitespace-nowrap bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition flex items-center gap-1">
                                     <i class="fa-solid fa-box-archive"></i> <span id="archiveBtnText">Arsipkan</span>
                                 </button>
                                 <button type="button" id="btnDeleteItem"
-                                    class="text-xs text-roseDestructive hover:bg-roseDestructive/10 border border-roseDestructive/30 px-3 py-1.5 rounded-lg transition"
+                                    class="text-xs whitespace-nowrap text-roseDestructive hover:bg-roseDestructive/10 border border-roseDestructive/30 px-3 py-1.5 rounded-lg transition"
                                     title="Hapus Item">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                                 <button type="button" id="btnCancelEdit"
-                                    class="text-xs bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
-                                    <i class="fa-solid fa-xmark text-xs"></i> Batal
+                                    class="hidden md:flex text-xs whitespace-nowrap bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition font-medium items-center gap-1">
+                                    <i class="fa-solid fa-xmark text-xs"></i> <span>Batal</span>
                                 </button>
                                 <button type="submit" id="btnSaveItem"
-                                    class="text-xs bg-emeraldAccent hover:bg-emeraldBright text-slate-950 font-bold px-4 py-1.5 rounded-lg transition">
+                                    class="hidden md:block text-xs whitespace-nowrap bg-emeraldAccent hover:bg-emeraldBright text-slate-950 font-bold px-4 py-1.5 rounded-lg transition">
                                     Simpan
                                 </button>
                             </div>
