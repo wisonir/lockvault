@@ -124,6 +124,7 @@ const tabLogin = document.getElementById("tabLogin");
 const tabRegister = document.getElementById("tabRegister");
 const btnAuthSubmit = document.getElementById("btnAuthSubmit");
 const btnAuthText = document.getElementById("btnAuthText");
+const authPasswordInput = document.getElementById("authPassword");
 
 const listPane = document.getElementById("listPane");
 const detailPane = document.getElementById("detailPane");
@@ -271,20 +272,23 @@ tabRegister.onclick = () => {
 // Auth Submit
 authForm.onsubmit = async (e) => {
     e.preventDefault();
-    const email = document.getElementById("authEmail").value.trim();
-    const password = authPasswordInput.value;
+    const emailInput = document.getElementById("authEmail");
+    const authPasswordInput = document.getElementById("authPassword");
 
-    // Validasi Email Gmail
-    if (!DataValidator.isValidGmail(email)) {
-        showToast("Email harus menggunakan domain @gmail.com", true);
-        document.getElementById("authEmail").focus();
+    const email = emailInput ? emailInput.value.trim() : "";
+    const password = authPasswordInput ? authPasswordInput.value : "";
+
+    // Validasi format email umum
+    if (!DataValidator.isValidEmail(email)) {
+        showToast("Format alamat email tidak valid (contoh: user@domain.com)", true);
+        if (emailInput) emailInput.focus();
         return;
     }
 
     // Validasi Master Password
     if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
         showToast("Master Password minimal 8 karakter dan kombinasi huruf & angka", true);
-        authPasswordInput.focus();
+        if (authPasswordInput) authPasswordInput.focus();
         return;
     }
 
@@ -707,9 +711,9 @@ itemForm.onsubmit = async (e) => {
         }
 
         const rawUser = itemUsername.value.trim();
-        // Jika username diisi format email, wajib @gmail.com
-        if (rawUser.includes("@") && !DataValidator.isValidGmail(rawUser)) {
-            showToast("Username email harus berakhiran @gmail.com", true);
+        // Jika username diisi format email, periksa format email umum
+        if (rawUser.includes("@") && !DataValidator.isValidEmail(rawUser)) {
+            showToast("Format username email tidak valid", true);
             itemUsername.focus();
             return;
         }
@@ -757,8 +761,8 @@ itemForm.onsubmit = async (e) => {
             return;
         }
 
-        if (idEmail.value.trim() && !DataValidator.isValidGmail(idEmail.value)) {
-            showToast("Email identitas harus berakhiran @gmail.com!", true);
+        if (idEmail.value.trim() && !DataValidator.isValidEmail(idEmail.value)) {
+            showToast("Format email identitas tidak valid!", true);
             idEmail.focus();
             return;
         }
@@ -1302,10 +1306,10 @@ class ActionLoader {
  * Modern Strict Data Validator Engine
  */
 class DataValidator {
-    // 1. Validasi Email wajib @gmail.com
-    static isValidGmail(email) {
+    // 1. Validasi Email format umum (bisa semua domain: gmail, yahoo, custom domain, dsb.)
+    static isValidEmail(email) {
         if (!email) return false;
-        const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email.trim());
     }
 
