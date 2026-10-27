@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LockVault — Zero-Knowledge Cryptographic Vault</title>
+    <title>LockVault — Encrypted Password Manager</title>
 
-    <!-- CSS Framework & Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -16,16 +15,17 @@
             theme: {
                 extend: {
                     colors: {
-                        canvas: '#020617',
+                        canvas: '#070d1f',
                         surface: '#0c1324',
-                        surfaceCard: '#0f172a',
+                        surfaceCard: '#151b2d',
                         surfaceElevated: '#191f31',
                         borderHairline: '#1e293b',
                         borderStandard: '#334155',
                         emeraldAccent: '#10b981',
                         emeraldBright: '#4edea3',
                         roseDestructive: '#f43f5e',
-                        amberWarning: '#f59e0b'
+                        amberWarning: '#f59e0b',
+                        skyAction: '#38bdf8'
                     }
                 }
             }
@@ -33,61 +33,93 @@
     </script>
 </head>
 
-<body class="bg-canvas min-h-screen flex flex-col antialiased select-none">
+<body class="bg-canvas min-h-screen flex flex-col antialiased text-slate-100 select-none pb-16 md:pb-0">
 
     <!-- Top Global Header -->
     <header
         class="border-b border-borderHairline bg-surface/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5 flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <div
-                class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emeraldBright flex items-center justify-center font-bold">
+                class="w-8 h-8 rounded-xl bg-emeraldAccent/15 border border-emeraldAccent/30 text-emeraldBright flex items-center justify-center font-bold">
                 <i class="fa-solid fa-shield-halved text-sm"></i>
             </div>
             <div>
-                <div class="flex items-center space-x-1.5">
-                    <span class="font-brand font-bold text-sm tracking-wide text-white">Lock<span
-                            class="text-emeraldBright">Vault</span></span>
+                <h1 class="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+                    Lock<span class="text-emeraldBright">Vault</span>
                     <span
-                        class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-borderHairline">v1.0
-                        Zero-Knowledge</span>
-                </div>
+                        class="text-[9px] bg-slate-800 text-slate-300 font-normal px-1.5 py-0.5 rounded border border-borderHairline">Zero-Knowledge</span>
+                </h1>
             </div>
         </div>
 
-        <!-- User Header Status -->
-        <div id="authHeaderActions" class="hidden flex items-center space-x-3">
-            <div
-                class="hidden sm:flex items-center space-x-1.5 text-xs text-slate-400 bg-surfaceElevated px-2.5 py-1 rounded-full border border-borderHairline">
-                <span class="w-2 h-2 rounded-full bg-emeraldBright animate-pulse"></span>
-                <span id="userEmailBadge" class="font-mono-secret text-[11px] text-slate-200"></span>
+        <!-- Header Actions -->
+        <div id="authHeaderActions" class="hidden flex items-center space-x-2.5">
+            <!-- Tombol Tambah dengan Dropdown Tipe Item -->
+            <div class="relative">
+                <button id="btnOpenAddMenu"
+                    class="bg-skyAction hover:bg-sky-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-plus text-xs"></i> <span>Tambah</span>
+                </button>
+                <!-- Dropdown Tipe Tambah Data -->
+                <div id="addTypeMenu"
+                    class="hidden absolute right-0 mt-2 w-48 bg-surfaceCard border border-borderStandard rounded-xl shadow-2xl py-1.5 z-50">
+                    <button
+                        class="add-type-btn w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-xs text-slate-200"
+                        data-type="login">
+                        <i class="fa-solid fa-globe w-4 text-skyAction"></i> Masuk (Login)
+                    </button>
+                    <button
+                        class="add-type-btn w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-xs text-slate-200"
+                        data-type="card">
+                        <i class="fa-regular fa-credit-card w-4 text-emeraldBright"></i> Kartu (Card)
+                    </button>
+                    <button
+                        class="add-type-btn w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-xs text-slate-200"
+                        data-type="identity">
+                        <i class="fa-regular fa-id-card w-4 text-amberWarning"></i> Identitas
+                    </button>
+                    <button
+                        class="add-type-btn w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-xs text-slate-200"
+                        data-type="note">
+                        <i class="fa-regular fa-note-sticky w-4 text-purple-400"></i> Catatan
+                    </button>
+                    <button
+                        class="add-type-btn w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-xs text-slate-200"
+                        data-type="ssh">
+                        <i class="fa-solid fa-key w-4 text-rose-400"></i> Kunci SSH
+                    </button>
+                    <div class="my-1 border-t border-borderHairline"></div>
+                    <button
+                        class="add-type-btn w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-xs text-slate-300"
+                        data-type="folder">
+                        <i class="fa-regular fa-folder w-4 text-slate-400"></i> Direktori / Folder Baru
+                    </button>
+                </div>
             </div>
-            <button id="btnLogout"
-                class="text-xs text-roseDestructive hover:text-rose-300 px-2 py-1 rounded hover:bg-rose-500/10 transition flex items-center space-x-1">
-                <i class="fa-solid fa-power-off text-xs"></i>
-                <span class="hidden sm:inline">Keluar</span>
+
+            <div class="w-8 h-8 rounded-full bg-rose-600 text-white font-bold text-xs flex items-center justify-center shadow"
+                id="userInitialBadge">
+                WI
+            </div>
+            <button id="btnLogout" title="Keluar"
+                class="text-xs text-slate-400 hover:text-roseDestructive p-1.5 transition">
+                <i class="fa-solid fa-power-off text-sm"></i>
             </button>
         </div>
     </header>
 
-    <!-- SCREEN 1: Authentication Screen -->
+    <!-- SCREEN 1: Auth Screen -->
     <main id="authScreen" class="flex-1 flex items-center justify-center p-4">
-        <div
-            class="w-full max-w-sm bg-surface border border-borderStandard/60 rounded-2xl p-6 shadow-2xl relative glow-emerald">
-            <!-- Shield Emblem -->
+        <div class="w-full max-w-sm bg-surface border border-borderStandard/60 rounded-2xl p-6 shadow-2xl relative">
             <div class="flex flex-col items-center mb-5">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emeraldBright text-2xl mb-2">
+                    class="w-14 h-14 rounded-2xl bg-emeraldAccent/10 border border-emeraldAccent/30 flex items-center justify-center text-emeraldBright text-2xl mb-2">
                     <i class="fa-solid fa-lock"></i>
                 </div>
-                <h1 class="font-brand font-bold text-lg text-white">Lock<span class="text-emeraldBright">Vault</span>
-                </h1>
-                <div class="flex items-center space-x-1 text-[10px] text-emeraldBright mt-0.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emeraldBright"></span>
-                    <span class="tracking-wider uppercase font-semibold">Zero-Knowledge Enclave</span>
-                </div>
+                <h2 class="font-bold text-lg text-white">Buka Kunci Brankas</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">Enkripsi lokal Web Crypto (AES-256-GCM)</p>
             </div>
 
-            <!-- Segmented Switch Tab -->
             <div class="flex bg-canvas p-1 rounded-lg border border-borderHairline mb-5">
                 <button id="tabLogin"
                     class="flex-1 py-1.5 text-xs font-semibold rounded-md bg-emeraldAccent text-slate-950 transition">Masuk</button>
@@ -96,246 +128,519 @@
                     Akun</button>
             </div>
 
-            <!-- Auth Form -->
             <form id="authForm" class="space-y-4">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Alamat
-                        Email</label>
-                    <div class="relative focus-glow rounded-lg">
-                        <input type="email" id="authEmail" required placeholder="nama@domain.com"
-                            class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none">
-                    </div>
+                    <label
+                        class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Email</label>
+                    <input type="email" id="authEmail" required placeholder="nama@domain.com"
+                        class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emeraldAccent">
                 </div>
-
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Master
                         Password</label>
-                    <div class="relative focus-glow rounded-lg">
-                        <input type="password" id="authPassword" required placeholder="••••••••••••••••"
-                            class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 pr-9 focus:outline-none font-mono-secret">
-                        <button type="button" id="btnToggleAuthPass"
-                            class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
+                    <input type="password" id="authPassword" required placeholder="••••••••••••••••"
+                        class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emeraldAccent font-mono">
                 </div>
-
-                <!-- Protocol Warning Card -->
-                <div class="bg-amberWarning/10 border border-amberWarning/20 rounded-lg p-2.5 flex space-x-2">
-                    <i class="fa-solid fa-triangle-exclamation text-amberWarning text-xs mt-0.5"></i>
-                    <p class="text-[10px] text-amber-200/80 leading-relaxed">
-                        <strong>Zero-Knowledge Protocol:</strong> Kunci diolah lokal di browser Anda. Kami tidak pernah
-                        mengetahui Master Password Anda.
-                    </p>
-                </div>
-
                 <button type="submit" id="btnAuthSubmit"
-                    class="w-full bg-emeraldAccent hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20">
+                    class="w-full bg-emeraldAccent hover:bg-emeraldBright text-slate-950 font-bold py-2.5 rounded-lg text-xs transition flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-shield-halved"></i>
                     <span id="btnAuthText">Buka Kunci Vault</span>
                 </button>
             </form>
-
-            <div class="text-center mt-5 text-[10px] text-slate-500 font-mono-secret">
-                AES-256-GCM • PBKDF2 (100,000 Iterations)
-            </div>
         </div>
     </main>
 
-    <!-- SCREEN 2: Main Vault Dashboard (Split-Pane on Desktop) -->
-    <main id="vaultScreen" class="hidden flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 flex flex-col md:flex-row gap-3">
+    <!-- SCREEN 2: Main Application Sections (Tab Driven) -->
+    <div id="mainAppWrapper" class="hidden flex-1 flex flex-col">
 
-        <!-- LEFT PANEL: Navigation & List Pane -->
-        <aside id="listPane"
-            class="w-full md:w-80 lg:w-96 bg-surface border border-borderHairline rounded-xl flex flex-col h-[88vh] overflow-hidden">
-            <!-- Search & Controls Header -->
-            <div class="p-3 border-b border-borderHairline space-y-2.5">
-                <div class="flex items-center space-x-2">
-                    <div class="relative flex-1 focus-glow rounded-lg">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-                        <input type="text" id="searchInput" placeholder="Cari akun atau URL..."
-                            class="w-full bg-canvas border border-borderStandard/70 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none">
-                    </div>
-                    <button id="btnNewItem" title="Tambah Akun Baru"
-                        class="bg-emeraldAccent hover:bg-emeraldBright text-slate-950 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                </div>
+        <!-- SECTION A: VAULT TAB -->
+        <section id="sectionVault" class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col md:flex-row gap-4">
+            <!-- List Pane -->
+            <aside id="listPane"
+                class="w-full md:w-96 lg:w-[420px] bg-surface border border-borderHairline rounded-2xl flex flex-col h-[82vh] overflow-hidden">
 
-                <!-- Category Filter Pills -->
-                <div class="flex space-x-1.5 text-[11px] overflow-x-auto pb-0.5">
-                    <button
-                        class="filter-chip px-2.5 py-0.5 rounded-full bg-emeraldAccent/15 text-emeraldBright border border-emeraldAccent/30 font-semibold"
-                        data-category="all">Semua</button>
-                    <button
-                        class="filter-chip px-2.5 py-0.5 rounded-full bg-surfaceElevated text-slate-400 hover:text-white border border-borderHairline"
-                        data-category="login">Logins</button>
-                    <button
-                        class="filter-chip px-2.5 py-0.5 rounded-full bg-surfaceElevated text-slate-400 hover:text-white border border-borderHairline"
-                        data-category="notes">Catatan</button>
-                </div>
-            </div>
-
-            <!-- Item Collection Counter -->
-            <div
-                class="px-3 py-1.5 bg-canvas/40 border-b border-borderHairline flex justify-between items-center text-[10px] text-slate-400 font-mono-secret">
-                <span>KOLEKSI KREDENSIAL</span>
-                <span id="itemCountBadge">0 item tersinkronisasi</span>
-            </div>
-
-            <!-- Items Scrollable List -->
-            <div id="itemList" class="flex-1 overflow-y-auto p-2 space-y-1.5">
-                <!-- Rendered by app.js -->
-            </div>
-        </aside>
-
-        <!-- RIGHT PANEL: Credential Detail & Editor View -->
-        <section id="detailPane"
-            class="hidden md:flex flex-1 bg-surface border border-borderHairline rounded-xl p-4 sm:p-6 flex-col justify-between overflow-y-auto h-[88vh]">
-
-            <!-- Empty Placeholder State -->
-            <div id="emptyView" class="h-full flex flex-col items-center justify-center text-slate-500">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-canvas border border-borderHairline flex items-center justify-center text-2xl text-slate-600 mb-3">
-                    <i class="fa-solid fa-vault"></i>
-                </div>
-                <p class="text-sm font-brand font-semibold text-slate-400">Pilih item untuk melihat detail</p>
-                <p class="text-xs text-slate-600 mt-1">atau klik tombol (+) untuk menyimpan data kredensial baru.</p>
-            </div>
-
-            <!-- Detail Form -->
-            <form id="itemForm" class="hidden flex flex-col h-full justify-between space-y-4">
-                <input type="hidden" id="itemId">
-
-                <div>
-                    <!-- Header Actions -->
-                    <div class="flex items-center justify-between border-b border-borderHairline pb-3 mb-4">
-                        <div class="flex items-center space-x-2">
-                            <button type="button" id="btnBackToList"
-                                class="md:hidden text-slate-400 hover:text-white pr-2">
-                                <i class="fa-solid fa-arrow-left"></i>
-                            </button>
-                            <div>
-                                <h2 id="formTitle" class="font-brand font-bold text-base text-white">Detail Kredensial
-                                </h2>
-                                <span class="text-[10px] text-emeraldBright font-mono-secret">● AES-256-GCM
-                                    Encrypted</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button type="button" id="btnDeleteItem"
-                                class="text-xs text-roseDestructive hover:bg-roseDestructive/10 border border-roseDestructive/30 px-3 py-1.5 rounded-lg transition">
-                                <i class="fa-solid fa-trash-can mr-1"></i> Hapus
-                            </button>
-                            <button type="submit" id="btnSaveItem"
-                                class="text-xs bg-emeraldAccent hover:bg-emeraldBright text-slate-950 font-bold px-4 py-1.5 rounded-lg transition shadow-md">
-                                <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan
-                            </button>
-                        </div>
+                <!-- Search & Custom Folder Filter -->
+                <div class="p-3 border-b border-borderHairline space-y-2 bg-surface/50">
+                    <div class="relative rounded-xl">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="searchInput" placeholder="Cari nama, username, atau URL..."
+                            class="w-full bg-canvas border border-borderStandard/80 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emeraldAccent">
                     </div>
 
-                    <!-- Fields Grid -->
-                    <div class="space-y-3.5">
-                        <div>
-                            <label
-                                class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Judul
-                                Layanan / Akun</label>
-                            <input type="text" id="itemTitle" required
-                                placeholder="Contoh: Google Workspace, GitHub Enterprise"
-                                class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus-glow">
-                        </div>
+                    <!-- Custom Dark-Themed Folder Dropdown -->
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <button id="btnFolderDropdown" type="button"
+                                class="w-full flex items-center justify-between bg-canvas border border-borderStandard/80 rounded-xl px-3 py-2 text-xs text-slate-200 hover:border-slate-500 transition">
+                                <span class="flex items-center gap-2 truncate">
+                                    <i class="fa-regular fa-folder text-slate-400"></i>
+                                    <span id="currentFolderText">Semua Folder</span>
+                                </span>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                            </button>
 
-                        <div>
-                            <label
-                                class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Username
-                                / Email Akun</label>
-                            <div class="relative focus-glow rounded-lg">
-                                <input type="text" id="itemUsername" placeholder="user@domain.com"
-                                    class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white pr-9 focus:outline-none font-mono-secret">
-                                <button type="button" id="btnCopyUsername" title="Salin Username"
-                                    class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs">
-                                    <i class="fa-regular fa-copy"></i>
+                            <!-- Folder Dropdown Menu Items -->
+                            <div id="folderDropdownMenu"
+                                class="hidden absolute left-0 right-0 mt-1 bg-surfaceCard border border-borderStandard rounded-xl shadow-2xl py-1 z-50 max-h-56 overflow-y-auto">
+                                <button
+                                    class="folder-option w-full text-left px-3 py-2 text-xs hover:bg-surfaceElevated flex items-center justify-between text-slate-200"
+                                    data-folder="ALL">
+                                    <span>Semua Folder</span>
+                                    <i class="fa-solid fa-check text-emeraldBright text-[10px]"></i>
+                                </button>
+                                <div id="customFolderList"></div>
+                                <div class="border-t border-borderHairline my-1"></div>
+                                <button
+                                    class="folder-option w-full text-left px-3 py-2 text-xs hover:bg-surfaceElevated flex items-center gap-2 text-amberWarning"
+                                    data-folder="ARCHIVED">
+                                    <i class="fa-solid fa-box-archive"></i> Arsip (Archived)
                                 </button>
                             </div>
                         </div>
 
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label
-                                    class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Password
-                                    Rahasia</label>
-                                <span id="entropyText" class="text-[10px] text-slate-500 font-mono-secret">0 bit
-                                    entropy</span>
-                            </div>
-                            <div class="relative focus-glow rounded-lg">
-                                <input type="password" id="itemPassword" placeholder="••••••••••••••••"
-                                    class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white pr-20 focus:outline-none font-mono-secret">
-                                <div class="absolute right-2 top-2 flex items-center space-x-2 text-xs text-slate-500">
-                                    <button type="button" id="btnToggleItemPass" title="Lihat Password"
-                                        class="hover:text-slate-300"><i class="fa-solid fa-eye"></i></button>
-                                    <button type="button" id="btnQuickGenPass" title="Generate Password"
-                                        class="hover:text-emeraldBright"><i
-                                            class="fa-solid fa-arrows-rotate"></i></button>
-                                    <button type="button" id="btnCopyItemPass" title="Salin Password"
-                                        class="hover:text-slate-300"><i class="fa-regular fa-copy"></i></button>
+                        <button id="btnManageFolders" title="Kelola Folder"
+                            class="bg-canvas hover:bg-surfaceElevated border border-borderStandard/80 text-slate-400 hover:text-white px-3 py-2 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-folder-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section Title & Counter -->
+                <div
+                    class="px-3.5 py-2 bg-canvas/40 border-b border-borderHairline flex justify-between items-center text-[11px] font-semibold text-slate-400">
+                    <span class="flex items-center gap-1.5">
+                        <span>Kredensial Vault</span>
+                        <i class="fa-solid fa-circle-info text-[10px] text-skyAction"></i>
+                    </span>
+                    <span id="itemCountBadge" class="font-mono text-emeraldBright text-xs">0</span>
+                </div>
+
+                <!-- Cards List -->
+                <div id="itemList" class="flex-1 overflow-y-auto p-2.5 space-y-2"></div>
+            </aside>
+
+            <!-- Right Detail / Editor Pane -->
+            <section id="detailPane"
+                class="hidden md:flex flex-1 bg-surface border border-borderHairline rounded-2xl p-5 sm:p-6 flex-col justify-between overflow-y-auto h-[82vh]">
+                <!-- Empty State -->
+                <div id="emptyView" class="h-full flex flex-col items-center justify-center text-slate-500">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-canvas border border-borderHairline flex items-center justify-center text-2xl text-slate-600 mb-3">
+                        <i class="fa-solid fa-vault"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-300">Pilih salah satu item kredensial</p>
+                    <p class="text-xs text-slate-500 mt-1">atau klik tombol Tambah untuk membuat kredensial baru.</p>
+                </div>
+
+                <!-- Detail Form -->
+                <form id="itemForm" class="hidden flex flex-col h-full justify-between space-y-4">
+                    <input type="hidden" id="itemId">
+                    <input type="hidden" id="itemType" value="login">
+                    <input type="hidden" id="isArchivedState" value="false">
+
+                    <div>
+                        <!-- Header Form -->
+                        <div class="flex items-center justify-between border-b border-borderHairline pb-3 mb-4">
+                            <div class="flex items-center space-x-2">
+                                <button type="button" id="btnBackToList"
+                                    class="md:hidden text-slate-400 hover:text-white pr-2">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <div class="flex items-center gap-2.5">
+                                    <div id="formIconContainer"
+                                        class="w-8 h-8 rounded-xl bg-canvas border border-borderHairline flex items-center justify-center text-sm">
+                                        <img id="formFavicon" src="" alt=""
+                                            class="w-5 h-5 rounded object-contain hidden">
+                                        <i id="formTypeIcon" class="fa-solid fa-globe text-skyAction"></i>
+                                    </div>
+                                    <div>
+                                        <h2 id="formTitle" class="font-bold text-base text-white">Detail Item</h2>
+                                        <span id="formSubInfo" class="text-[10px] text-emeraldBright font-mono">●
+                                            AES-256-GCM Encrypted</span>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- 4-Tier Entropy Bar -->
-                            <div class="grid grid-cols-4 gap-1.5 mt-1.5">
-                                <div id="entBar1" class="h-1 rounded bg-slate-800 transition-colors"></div>
-                                <div id="entBar2" class="h-1 rounded bg-slate-800 transition-colors"></div>
-                                <div id="entBar3" class="h-1 rounded bg-slate-800 transition-colors"></div>
-                                <div id="entBar4" class="h-1 rounded bg-slate-800 transition-colors"></div>
-                            </div>
-                        </div>
 
-                        <div>
-                            <label
-                                class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">URL
-                                Website / Portal</label>
-                            <div class="relative focus-glow rounded-lg">
-                                <input type="url" id="itemUrl" placeholder="https://..."
-                                    class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white pr-9 focus:outline-none font-mono-secret">
-                                <button type="button" id="btnLaunchUrl" title="Buka Link di Tab Baru"
-                                    class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs">
-                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" id="btnAutofillTop"
+                                    class="text-xs bg-skyAction/10 hover:bg-skyAction/20 text-skyAction border border-skyAction/30 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Autofill
+                                </button>
+                                <button type="button" id="btnCloneItem"
+                                    class="text-xs bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-regular fa-clone"></i> Clone
+                                </button>
+                                <button type="button" id="btnArchiveToggle"
+                                    class="text-xs bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                    <i class="fa-solid fa-box-archive"></i> <span id="archiveBtnText">Arsipkan</span>
+                                </button>
+                                <button type="button" id="btnDeleteItem"
+                                    class="text-xs text-roseDestructive hover:bg-roseDestructive/10 border border-roseDestructive/30 px-3 py-1.5 rounded-lg transition">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button type="submit" id="btnSaveItem"
+                                    class="text-xs bg-emeraldAccent hover:bg-emeraldBright text-slate-950 font-bold px-4 py-1.5 rounded-lg transition">
+                                    Simpan
                                 </button>
                             </div>
                         </div>
 
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Catatan
-                                    Aman (Monospace Encrypted)</label>
-                                <button type="button" id="btnCopyNotes"
-                                    class="text-[10px] text-slate-400 hover:text-slate-200"><i
-                                        class="fa-regular fa-copy mr-1"></i>Salin Catatan</button>
+                        <!-- Dynamic Fields Container -->
+                        <div class="space-y-3.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Nama
+                                        Item</label>
+                                    <input type="text" id="itemTitle" required placeholder="Contoh: Google Workspace"
+                                        class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Folder</label>
+                                    <div class="relative">
+                                        <button type="button" id="btnFormFolderSelect"
+                                            class="w-full flex items-center justify-between bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                                            <span id="formFolderSelectedText">Default</span>
+                                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                        </button>
+                                        <!-- Form Folder Dropdown -->
+                                        <div id="formFolderMenu"
+                                            class="hidden absolute left-0 right-0 mt-1 bg-surfaceCard border border-borderStandard rounded-xl shadow-2xl py-1 z-50 max-h-48 overflow-y-auto">
+                                            <!-- Rendered by JS -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <textarea id="itemNotes" rows="4"
-                                placeholder="Recovery phrase, SSH private key, lisensi software..."
-                                class="w-full bg-canvas border border-borderStandard rounded-lg p-3 text-xs text-slate-300 font-mono-secret focus:outline-none focus-glow"></textarea>
+
+                            <!-- Login & Identity Specific Fields -->
+                            <div id="fieldGroupWeb" class="space-y-3.5">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Website
+                                        URL</label>
+                                    <input type="text" id="itemUrl" placeholder="https://mail.google.com"
+                                        class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent font-mono">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Username /
+                                        Email</label>
+                                    <div class="relative">
+                                        <input type="text" id="itemUsername" placeholder="user@domain.com"
+                                            class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white pr-9 focus:outline-none focus:border-emeraldAccent font-mono">
+                                        <button type="button" id="btnCopyUsername"
+                                            class="absolute right-2.5 top-2 text-slate-500 hover:text-slate-300 text-xs">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Password Field (Login, Card, SSH) -->
+                            <div id="fieldGroupPassword">
+                                <div class="flex justify-between items-center mb-1">
+                                    <label id="lblPassword"
+                                        class="text-[11px] font-semibold text-slate-400 uppercase">Password /
+                                        PIN</label>
+                                    <span id="entropyText" class="text-[10px] text-slate-500 font-mono">0 bit
+                                        entropy</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="password" id="itemPassword" placeholder="••••••••••••••••"
+                                        class="w-full bg-canvas border border-borderStandard rounded-lg px-3 py-2 text-xs text-white pr-24 focus:outline-none focus:border-emeraldAccent font-mono">
+                                    <div
+                                        class="absolute right-2 top-2 flex items-center space-x-2 text-xs text-slate-500">
+                                        <button type="button" id="btnToggleItemPass" title="Lihat/Sembunyikan"
+                                            class="hover:text-slate-300"><i class="fa-solid fa-eye"></i></button>
+                                        <button type="button" id="btnGenPass" title="Generate Acak"
+                                            class="hover:text-emeraldBright"><i
+                                                class="fa-solid fa-arrows-rotate"></i></button>
+                                        <button type="button" id="btnCopyItemPass" title="Salin"
+                                            class="hover:text-slate-300"><i class="fa-regular fa-copy"></i></button>
+                                    </div>
+                                </div>
+                                <!-- Strength Bar -->
+                                <div class="grid grid-cols-4 gap-1.5 mt-1.5">
+                                    <div id="entBar1" class="h-1 rounded bg-slate-800 transition-colors"></div>
+                                    <div id="entBar2" class="h-1 rounded bg-slate-800 transition-colors"></div>
+                                    <div id="entBar3" class="h-1 rounded bg-slate-800 transition-colors"></div>
+                                    <div id="entBar4" class="h-1 rounded bg-slate-800 transition-colors"></div>
+                                </div>
+                            </div>
+
+                            <!-- Notes & Long Text -->
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Catatan
+                                    Aman / Secret Keys</label>
+                                <textarea id="itemNotes" rows="4"
+                                    placeholder="Recovery phrase, SSH private key, lisensi..."
+                                    class="w-full bg-canvas border border-borderStandard rounded-lg p-3 text-xs text-slate-300 font-mono focus:outline-none focus:border-emeraldAccent"></textarea>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Metadata Footer -->
-                <div
-                    class="pt-3 border-t border-borderHairline flex justify-between items-center text-[10px] text-slate-500 font-mono-secret">
-                    <span id="metadataDate">Diperbarui: -</span>
-                    <span class="text-emeraldBright">Client-Side E2E Guard</span>
-                </div>
-            </form>
+                    <div
+                        class="pt-3 border-t border-borderHairline flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                        <span id="metadataDate">Diperbarui: -</span>
+                        <span class="text-emeraldBright">Zero-Knowledge Encrypted</span>
+                    </div>
+                </form>
+            </section>
         </section>
-    </main>
 
-    <!-- Global Floating Toast Notification -->
+        <!-- SECTION B: GENERATOR TAB -->
+        <section id="sectionGenerator" class="hidden flex-1 max-w-xl w-full mx-auto p-4 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-borderHairline">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-rotate text-emeraldBright"></i> Generator Kredensial
+                </h2>
+            </div>
+
+            <!-- Segmented Type Selector -->
+            <div class="flex bg-surfaceCard p-1 rounded-xl border border-borderHairline">
+                <button id="genTypePass"
+                    class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-skyAction text-slate-950 transition">Password</button>
+                <button id="genTypePassphrase"
+                    class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Passphrase</button>
+                <button id="genTypeUsername"
+                    class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Username</button>
+            </div>
+
+            <!-- Result Card -->
+            <div class="bg-surfaceCard border border-borderStandard rounded-2xl p-4 flex items-center justify-between">
+                <span id="genResultText"
+                    class="font-mono text-base font-semibold text-emeraldBright break-all pr-2"></span>
+                <div class="flex items-center space-x-2 shrink-0">
+                    <button id="btnRegenerate"
+                        class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-canvas transition"
+                        title="Acak Ulang">
+                        <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                    </button>
+                    <button id="btnCopyGenResult"
+                        class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-canvas transition" title="Salin">
+                        <i class="fa-regular fa-copy text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Generator Options Card -->
+            <div class="bg-surface border border-borderHairline rounded-2xl p-4 space-y-4">
+                <div>
+                    <div class="flex justify-between items-center text-xs mb-1">
+                        <span class="font-semibold text-slate-300">Panjang Karakter</span>
+                        <span id="genLengthDisplay" class="font-mono text-emeraldBright font-bold">16</span>
+                    </div>
+                    <input type="range" id="genLengthSlider" min="6" max="64" value="16"
+                        class="w-full accent-emeraldBright cursor-pointer">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-xs text-slate-300">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="chkUpper" checked
+                            class="rounded border-borderStandard accent-emeraldBright">
+                        <span>Huruf Besar (A-Z)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="chkLower" checked
+                            class="rounded border-borderStandard accent-emeraldBright">
+                        <span>Huruf Kecil (a-z)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="chkNumbers" checked
+                            class="rounded border-borderStandard accent-emeraldBright">
+                        <span>Angka (0-9)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="chkSymbols" checked
+                            class="rounded border-borderStandard accent-emeraldBright">
+                        <span>Simbol (!@#$%^&*)</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION C: HEALTH TAB -->
+        <section id="sectionHealth" class="hidden flex-1 max-w-xl w-full mx-auto p-4 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-borderHairline">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-heart-pulse text-roseDestructive"></i> Status Kesehatan Brankas (Health)
+                </h2>
+            </div>
+
+            <!-- Health Overview Banner -->
+            <div class="bg-surfaceCard border border-borderStandard rounded-2xl p-5 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-roseDestructive/10 border border-roseDestructive/30 text-roseDestructive flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-shield-virus"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Audit Keamanan Otomatis</h3>
+                        <p class="text-xs text-slate-400">Pemeriksaan lokal terhadap kata sandi yang lemah dan dipakai
+                            berulang.</p>
+                    </div>
+                </div>
+                <button id="btnScanVault"
+                    class="w-full bg-skyAction hover:bg-sky-400 text-slate-950 font-bold py-2 rounded-xl text-xs transition">
+                    Pindai Brankas Saya
+                </button>
+            </div>
+
+            <!-- Health Metrics Results -->
+            <div class="space-y-2.5">
+                <div class="bg-surface border border-borderHairline p-3.5 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-roseDestructive/10 text-roseDestructive flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-xs text-white">Password Lemah</div>
+                            <div class="text-[11px] text-slate-400">Entropi di bawah standar aman</div>
+                        </div>
+                    </div>
+                    <span id="healthWeakCount" class="font-mono font-bold text-roseDestructive text-sm">0</span>
+                </div>
+
+                <div class="bg-surface border border-borderHairline p-3.5 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-amberWarning/10 text-amberWarning flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-xs text-white">Password Digunakan Ulang</div>
+                            <div class="text-[11px] text-slate-400">Kata sandi sama di lebih dari 1 akun</div>
+                        </div>
+                    </div>
+                    <span id="healthReusedCount" class="font-mono font-bold text-amberWarning text-sm">0</span>
+                </div>
+
+                <div class="bg-surface border border-borderHairline p-3.5 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-emeraldAccent/10 text-emeraldBright flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-shield-check"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-xs text-white">Total Kredensial Terlindungi</div>
+                            <div class="text-[11px] text-slate-400">Enkripsi AES-GCM 256-bit</div>
+                        </div>
+                    </div>
+                    <span id="healthTotalCount" class="font-mono font-bold text-emeraldBright text-sm">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION D: SETTINGS TAB -->
+        <section id="sectionSettings" class="hidden flex-1 max-w-xl w-full mx-auto p-4 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-borderHairline">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-slate-400"></i> Pengaturan
+                </h2>
+            </div>
+
+            <div class="space-y-2">
+                <button id="btnExportEncrypted"
+                    class="w-full bg-surface hover:bg-surfaceElevated border border-borderHairline p-3.5 rounded-xl flex items-center justify-between text-xs text-left transition">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-file-export text-skyAction"></i>
+                        <div>
+                            <div class="font-semibold text-white">Ekspor Brankas (Backup JSON)</div>
+                            <div class="text-[11px] text-slate-400">Unduh backup terenkripsi ke komputer</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                </button>
+
+                <button id="btnChangeMasterPassPlaceholder"
+                    class="w-full bg-surface hover:bg-surfaceElevated border border-borderHairline p-3.5 rounded-xl flex items-center justify-between text-xs text-left transition">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-key text-amberWarning"></i>
+                        <div>
+                            <div class="font-semibold text-white">Keamanan Akun & Kunci</div>
+                            <div class="text-[11px] text-slate-400">Informasi algoritma PBKDF2 & AES-256</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                </button>
+
+                <button id="btnPurgeLocalMemory"
+                    class="w-full bg-surface hover:bg-rose-500/10 border border-borderHairline hover:border-roseDestructive/40 p-3.5 rounded-xl flex items-center justify-between text-xs text-left transition text-roseDestructive">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-lock"></i>
+                        <div>
+                            <div class="font-semibold">Kunci Vault Sekarang (Auto-Lock)</div>
+                            <div class="text-[11px] text-slate-400">Hapus kunci dari memori RAM browser</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Bottom Navigation Bar (Bitwarden Inspired) -->
+    <nav id="bottomNav"
+        class="hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur border-t border-borderHairline flex justify-around items-center py-2 px-2">
+        <button class="nav-tab-btn flex flex-col items-center text-skyAction" data-target="sectionVault">
+            <i class="fa-solid fa-vault text-base"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Vault</span>
+        </button>
+        <button class="nav-tab-btn flex flex-col items-center text-slate-400 hover:text-white"
+            data-target="sectionGenerator">
+            <i class="fa-solid fa-arrows-rotate text-base"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Generator</span>
+        </button>
+        <button class="nav-tab-btn flex flex-col items-center text-slate-400 hover:text-white"
+            data-target="sectionHealth">
+            <i class="fa-solid fa-heart-pulse text-base"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Health</span>
+        </button>
+        <button class="nav-tab-btn flex flex-col items-center text-slate-400 hover:text-white"
+            data-target="sectionSettings">
+            <i class="fa-solid fa-gear text-base"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Settings</span>
+        </button>
+    </nav>
+
+    <!-- Global Context Menu (⋮) -->
+    <div id="itemContextMenu"
+        class="hidden fixed z-50 bg-surfaceCard border border-borderStandard rounded-xl shadow-2xl py-1.5 w-44 text-xs backdrop-blur-md">
+        <button id="menuActionAutofill"
+            class="w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-skyAction">
+            <i class="fa-solid fa-arrow-up-right-from-square w-4"></i> Autofill
+        </button>
+        <button id="menuActionView"
+            class="w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-slate-200">
+            <i class="fa-regular fa-eye w-4"></i> View
+        </button>
+        <button id="menuActionEdit"
+            class="w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-slate-200">
+            <i class="fa-regular fa-pen-to-square w-4"></i> Edit
+        </button>
+        <button id="menuActionClone"
+            class="w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-slate-200">
+            <i class="fa-regular fa-clone w-4"></i> Clone
+        </button>
+        <button id="menuActionArchive"
+            class="w-full text-left px-3.5 py-2 hover:bg-surfaceElevated flex items-center gap-2.5 text-slate-200">
+            <i class="fa-solid fa-box-archive w-4"></i> <span id="menuArchiveText">Archive</span>
+        </button>
+        <div class="my-1 border-t border-borderHairline"></div>
+        <button id="menuActionDelete"
+            class="w-full text-left px-3.5 py-2 hover:bg-rose-500/10 flex items-center gap-2.5 text-roseDestructive">
+            <i class="fa-solid fa-trash-can w-4"></i> Delete
+        </button>
+    </div>
+
+    <!-- Toast -->
     <div id="toast"
-        class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-surfaceCard border border-emeraldAccent/40 text-white px-4 py-2 rounded-xl text-xs flex items-center space-x-2 shadow-2xl transition-all duration-300 opacity-0 pointer-events-none translate-y-2">
+        class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-surfaceCard border border-emeraldAccent text-white px-4 py-2 rounded-xl text-xs flex items-center space-x-2 shadow-2xl transition-all duration-300 opacity-0 pointer-events-none translate-y-2">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emeraldBright"></i>
         <span id="toastMsg">Operasi berhasil</span>
     </div>
 
-    <!-- Dependencies Injection -->
     <script src="config.js"></script>
     <script src="crypto.js"></script>
     <script src="gas-bridge.js"></script>
