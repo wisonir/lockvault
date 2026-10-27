@@ -2,6 +2,91 @@
  * LockVault Web - v3 Full Feature (Multi-Types, Generator, Health, Settings, Custom Dropdowns)
  */
 
+/**
+ * Modern Clean Iconic Custom Dialogs (Promise-Based)
+ * Menggantikan window.confirm() dan window.prompt()
+ */
+class CustomDialog {
+    static open({ title, message, iconClass, iconBadgeClass, confirmText, confirmBtnClass, isPrompt = false, defaultValue = "" }) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById("customDialogOverlay");
+            const card = document.getElementById("customDialogCard");
+            const titleEl = document.getElementById("dialogTitle");
+            const msgEl = document.getElementById("dialogMessage");
+            const iconEl = document.getElementById("dialogIcon");
+            const badgeEl = document.getElementById("dialogIconBadge");
+            const inputWrapper = document.getElementById("dialogInputWrapper");
+            const inputEl = document.getElementById("dialogInput");
+            const btnCancel = document.getElementById("btnDialogCancel");
+            const btnConfirm = document.getElementById("btnDialogConfirm");
+            const btnConfirmText = document.getElementById("btnDialogConfirmText");
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            iconEl.className = iconClass || "fa-solid fa-circle-question";
+            badgeEl.className = `w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${iconBadgeClass}`;
+
+            btnConfirmText.innerText = confirmText || "OK";
+            btnConfirm.className = `px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-1.5 ${confirmBtnClass}`;
+
+            if (isPrompt) {
+                inputWrapper.classList.remove("hidden");
+                inputEl.value = defaultValue;
+                setTimeout(() => inputEl.focus(), 100);
+            } else {
+                inputWrapper.classList.add("hidden");
+            }
+
+            // Animasi Tampil
+            overlay.classList.remove("hidden", "pointer-events-none");
+            setTimeout(() => {
+                overlay.classList.remove("opacity-0");
+                card.classList.remove("scale-95");
+            }, 10);
+
+            const close = (value) => {
+                overlay.classList.add("opacity-0");
+                card.classList.add("scale-95");
+                setTimeout(() => {
+                    overlay.classList.add("hidden", "pointer-events-none");
+                    btnCancel.onclick = null;
+                    btnConfirm.onclick = null;
+                    resolve(value);
+                }, 200);
+            };
+
+            btnCancel.onclick = () => close(null);
+            btnConfirm.onclick = () => close(isPrompt ? inputEl.value : true);
+        });
+    }
+
+    // Helper Konfirmasi Hapus Destruktif
+    static async confirmDelete(itemName) {
+        return this.open({
+            title: "Hapus Item Permanen?",
+            message: `Item "${itemName}" akan dihapus dari brankas terenkripsi dan tidak dapat dipulihkan kembali.`,
+            iconClass: "fa-solid fa-trash-can",
+            iconBadgeClass: "bg-roseDestructive/15 border border-roseDestructive/30 text-roseDestructive",
+            confirmText: "Hapus Permanen",
+            confirmBtnClass: "bg-roseDestructive hover:bg-rose-600 text-white shadow-rose-500/20"
+        });
+    }
+
+    // Helper Prompt Tambah Folder
+    static async promptFolder() {
+        return this.open({
+            title: "Buat Folder Baru",
+            message: "Kelompokkan kredensial Anda ke dalam direktori khusus.",
+            iconClass: "fa-regular fa-folder-open",
+            iconBadgeClass: "bg-skyAction/15 border border-skyAction/30 text-skyAction",
+            confirmText: "Simpan Folder",
+            confirmBtnClass: "bg-skyAction hover:bg-sky-400 text-slate-950 shadow-sky-500/20",
+            isPrompt: true,
+            defaultValue: ""
+        });
+    }
+}
+
 const state = {
     user: null,
     masterKey: null,
@@ -91,6 +176,41 @@ const btnSaveItem = document.getElementById("btnSaveItem");
 // Context Menu (⋮)
 const itemContextMenu = document.getElementById("itemContextMenu");
 
+// Field Elements Tipe Card
+const fieldGroupCard = document.getElementById("fieldGroupCard");
+const cardHolder = document.getElementById("cardHolder");
+const cardNumber = document.getElementById("cardNumber");
+const cardBrand = document.getElementById("cardBrand");
+const cardExpMonth = document.getElementById("cardExpMonth");
+const cardExpYear = document.getElementById("cardExpYear");
+const cardCvv = document.getElementById("cardCvv");
+const btnToggleCardNum = document.getElementById("btnToggleCardNum");
+const btnToggleCardCvv = document.getElementById("btnToggleCardCvv");
+
+// Field Elements Tipe Identity
+const fieldGroupIdentity = document.getElementById("fieldGroupIdentity");
+const idTitleSelect = document.getElementById("idTitleSelect");
+const idFirstName = document.getElementById("idFirstName");
+const idMiddleName = document.getElementById("idMiddleName");
+const idLastName = document.getElementById("idLastName");
+const idUsername = document.getElementById("idUsername");
+const idCompany = document.getElementById("idCompany");
+const idSsn = document.getElementById("idSsn");
+const idPassport = document.getElementById("idPassport");
+const idPhone = document.getElementById("idPhone");
+const idEmail = document.getElementById("idEmail");
+const idAddress = document.getElementById("idAddress");
+
+const fieldGroupLogin = document.getElementById("fieldGroupLogin");
+
+// Toggle Intip untuk Nomor Kartu & CVV
+btnToggleCardNum.onclick = () => {
+    cardNumber.type = cardNumber.type === "password" ? "text" : "password";
+};
+btnToggleCardCvv.onclick = () => {
+    cardCvv.type = cardCvv.type === "password" ? "text" : "password";
+};
+
 let isLoginMode = true;
 
 // Toast Helper
@@ -146,6 +266,14 @@ authForm.onsubmit = async (e) => {
         state.user = res;
         state.masterKey = masterKey;
         state.authHash = authHash;
+
+        // Simpan kunci dan kredensial terenkripsi di memori tab (sessionStorage)
+        const rawKeyB64 = await CryptoEngine.exportKeyRaw(masterKey);
+        sessionStorage.setItem("lockvault_session", JSON.stringify({
+            user: res,
+            authHash: authHash,
+            rawKey: rawKeyB64
+        }));
 
         userInitialBadge.innerText = email.substring(0, 2).toUpperCase();
 
@@ -254,14 +382,16 @@ folderDropdownMenu.onclick = (e) => {
 };
 
 // Tambah Folder Baru
-btnManageFolders.onclick = () => {
-    const name = prompt("Masukkan nama direktori/folder baru:");
+btnManageFolders.onclick = async () => {
+    const name = await CustomDialog.promptFolder();
     if (name && name.trim()) {
         const clean = name.trim();
         if (!state.folders.includes(clean)) {
             state.folders.push(clean);
             renderFolderDropdownUI();
-            showToast(`Folder "${clean}" ditambahkan!`);
+            showToast(`Folder "${clean}" berhasil ditambahkan!`);
+        } else {
+            showToast("Folder dengan nama tersebut sudah ada", true);
         }
     }
 };
@@ -390,6 +520,27 @@ function openItemDetail(item, isReadOnly = false) {
     itemPassword.value = item.data.password || "";
     itemNotes.value = item.data.notes || "";
 
+    // Isi data Card
+    cardHolder.value = item.data.cardHolder || "";
+    cardNumber.value = item.data.cardNumber || "";
+    cardBrand.value = item.data.cardBrand || "";
+    cardExpMonth.value = item.data.cardExpMonth || "";
+    cardExpYear.value = item.data.cardExpYear || "";
+    cardCvv.value = item.data.cardCvv || "";
+
+    // Isi data Identity
+    idTitleSelect.value = item.data.idTitle || "";
+    idFirstName.value = item.data.firstName || "";
+    idMiddleName.value = item.data.middleName || "";
+    idLastName.value = item.data.lastName || "";
+    idUsername.value = item.data.idUsername || "";
+    idCompany.value = item.data.company || "";
+    idSsn.value = item.data.ssn || "";
+    idPassport.value = item.data.passport || "";
+    idPhone.value = item.data.phone || "";
+    idEmail.value = item.data.email || "";
+    idAddress.value = item.data.address || "";
+
     archiveBtnText.innerText = item.isArchived ? "Buka Arsip" : "Arsipkan";
     adjustFormFieldsForType(type);
 
@@ -409,28 +560,24 @@ function adjustFormFieldsForType(type) {
     formFavicon.classList.add("hidden");
     formTypeIcon.classList.remove("hidden");
 
+    // Sembunyikan semua grup dulu
+    fieldGroupLogin.classList.add("hidden");
+    fieldGroupCard.classList.add("hidden");
+    fieldGroupIdentity.classList.add("hidden");
+
     if (type === 'login') {
-        fieldGroupWeb.classList.remove("hidden");
-        fieldGroupPassword.classList.remove("hidden");
-        lblPassword.innerText = "Password";
+        fieldGroupLogin.classList.remove("hidden");
         formTypeIcon.className = "fa-solid fa-globe text-skyAction";
     } else if (type === 'card') {
-        fieldGroupWeb.classList.add("hidden");
-        fieldGroupPassword.classList.remove("hidden");
-        lblPassword.innerText = "PIN / CVV";
+        fieldGroupCard.classList.remove("hidden");
         formTypeIcon.className = "fa-regular fa-credit-card text-emeraldBright";
     } else if (type === 'identity') {
-        fieldGroupWeb.classList.add("hidden");
-        fieldGroupPassword.classList.add("hidden");
+        fieldGroupIdentity.classList.remove("hidden");
         formTypeIcon.className = "fa-regular fa-id-card text-amberWarning";
     } else if (type === 'note') {
-        fieldGroupWeb.classList.add("hidden");
-        fieldGroupPassword.classList.add("hidden");
         formTypeIcon.className = "fa-regular fa-note-sticky text-purple-400";
     } else if (type === 'ssh') {
-        fieldGroupWeb.classList.add("hidden");
-        fieldGroupPassword.classList.remove("hidden");
-        lblPassword.innerText = "Passphrase Key";
+        fieldGroupLogin.classList.remove("hidden");
         formTypeIcon.className = "fa-solid fa-key text-rose-400";
     }
 }
@@ -487,9 +634,30 @@ itemForm.onsubmit = async (e) => {
 
     const plainPayload = {
         type: type,
+        // Field Login / SSH
         username: itemUsername.value,
         password: itemPassword.value,
         url: itemUrl.value,
+        // Field Card
+        cardHolder: cardHolder.value,
+        cardNumber: cardNumber.value,
+        cardBrand: cardBrand.value,
+        cardExpMonth: cardExpMonth.value,
+        cardExpYear: cardExpYear.value,
+        cardCvv: cardCvv.value,
+        // Field Identity
+        idTitle: idTitleSelect.value,
+        firstName: idFirstName.value,
+        middleName: idMiddleName.value,
+        lastName: idLastName.value,
+        idUsername: idUsername.value,
+        company: idCompany.value,
+        ssn: idSsn.value,
+        passport: idPassport.value,
+        phone: idPhone.value,
+        email: idEmail.value,
+        address: idAddress.value,
+        // Catatan
         notes: itemNotes.value
     };
 
@@ -600,7 +768,8 @@ btnArchiveToggle.onclick = async () => {
 // Delete
 btnDeleteItem.onclick = async () => {
     if (!state.activeItem) return;
-    if (confirm(`Hapus "${state.activeItem.title}" secara permanen?`)) {
+    const isConfirmed = await CustomDialog.confirmDelete(state.activeItem.title);
+    if (isConfirmed) {
         try {
             await GasBridge.request({
                 action: "deleteItem",
@@ -833,6 +1002,7 @@ btnBackToList.onclick = () => {
 searchInput.oninput = renderFilteredVault;
 
 document.getElementById("btnLogout").onclick = () => {
+    sessionStorage.removeItem("lockvault_session");
     state.user = null;
     state.masterKey = null;
     state.authHash = null;
@@ -845,3 +1015,35 @@ function escapeHtml(str) {
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[s]));
 }
+
+// Auto-restore session saat refresh halaman (F5)
+window.addEventListener("DOMContentLoaded", async () => {
+    const savedSession = sessionStorage.getItem("lockvault_session");
+    if (!savedSession) return;
+
+    try {
+        const session = JSON.parse(savedSession);
+        if (session.user && session.authHash && session.rawKey) {
+            // 1. Pulihkan Master Key dari string mentah
+            state.masterKey = await CryptoEngine.importKeyRaw(session.rawKey);
+            state.user = session.user;
+            state.authHash = session.authHash;
+
+            // 2. Perbarui inisial avatar header
+            userInitialBadge.innerText = session.user.email.substring(0, 2).toUpperCase();
+
+            // 3. Tampilkan layar aplikasi utama & sembunyikan auth screen
+            authScreen.classList.add("hidden");
+            mainAppWrapper.classList.remove("hidden");
+            bottomNav.classList.remove("hidden");
+            authHeaderActions.classList.remove("hidden");
+
+            // 4. Dekripsi kembali brankas data secara lokal
+            await fetchAndDecryptVault();
+            initGenerator();
+        }
+    } catch (err) {
+        console.error("Gagal memulihkan sesi:", err);
+        sessionStorage.removeItem("lockvault_session");
+    }
+});

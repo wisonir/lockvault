@@ -146,4 +146,46 @@ class CryptoEngine {
         if (pool === 0) return 0;
         return Math.round(password.length * (Math.log(pool) / Math.log(2)));
     }
+    /**
+       * Ekspor CryptoKey menjadi string Base64 untuk disimpan sementara di sessionStorage tab
+       */
+    static async exportKeyRaw(key) {
+        const exported = await crypto.subtle.exportKey("raw", key);
+        return this.bufToB64(exported);
+    }
+
+    /**
+     * Impor kembali string Base64 dari sessionStorage menjadi CryptoKey AES-GCM
+     */
+    static async importKeyRaw(b64Key) {
+        const keyData = this.b64ToBuf(b64Key);
+        return crypto.subtle.importKey(
+            "raw",
+            keyData,
+            { name: CONFIG.CRYPTO.ALGO_NAME, length: CONFIG.CRYPTO.KEY_LENGTH },
+            true,
+            ["encrypt", "decrypt"]
+        );
+    }
+    /**
+       * Ekspor CryptoKey menjadi string Base64 untuk disimpan sementara di sessionStorage tab
+       */
+    static async exportKeyRaw(key) {
+        const exported = await crypto.subtle.exportKey("raw", key);
+        return this.bufToB64(exported);
+    }
+
+    /**
+     * Impor kembali string Base64 dari sessionStorage menjadi CryptoKey AES-GCM
+     */
+    static async importKeyRaw(b64Key) {
+        const keyData = this.b64ToBuf(b64Key);
+        return crypto.subtle.importKey(
+            "raw",
+            keyData,
+            { name: CONFIG.CRYPTO.ALGO_NAME, length: CONFIG.CRYPTO.KEY_LENGTH },
+            true,
+            ["encrypt", "decrypt"]
+        );
+    }
 }
