@@ -64,3 +64,23 @@ body {
     border-left: 3px solid var(--accent-emerald-bright) !important;
     background-color: #141f36 !important;
 }
+
+/* Animasi Loading Skeleton Shimmer */
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-shimmer {
+    background: linear-gradient(90deg,
+            #151b2d 25%,
+            #23293c 50%,
+            #151b2d 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite ease-in-out;
+}

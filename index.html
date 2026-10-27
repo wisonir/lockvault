@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LockVault — Encrypted Password Manager</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><path d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z'/></svg>">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -39,16 +41,25 @@
     <header
         class="border-b border-borderHairline bg-surface/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <div
-                class="w-8 h-8 rounded-xl bg-emeraldAccent/15 border border-emeraldAccent/30 text-emeraldBright flex items-center justify-center font-bold">
-                <i class="fa-solid fa-shield-halved text-sm"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
-                    Lock<span class="text-emeraldBright">Vault</span>
+            <div class="flex items-center gap-2.5">
+                <!-- Iconic Shield Logo -->
+                <div
+                    class="relative w-8 h-8 rounded-xl bg-gradient-to-br from-emeraldAccent/20 to-skyAction/20 border border-emeraldAccent/40 flex items-center justify-center text-emeraldBright shadow-lg shadow-emerald-500/10">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-3.04 8.78-7 9.88-3.96-1.1-7-5.34-7-9.88V6.3l7-3.12zM12 6a3.5 3.5 0 0 0-3.5 3.5V11H7v6h10v-6h-1.5V9.5A3.5 3.5 0 0 0 12 6zm0 2a1.5 1.5 0 0 1 1.5 1.5V11h-3V9.5A1.5 1.5 0 0 1 12 8z" />
+                    </svg>
                     <span
-                        class="text-[9px] bg-slate-800 text-slate-300 font-normal px-1.5 py-0.5 rounded border border-borderHairline">Zero-Knowledge</span>
-                </h1>
+                        class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emeraldBright animate-ping"></span>
+                    <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emeraldBright"></span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+                        Lock<span class="text-emeraldBright">Vault</span>
+                        <span
+                            class="text-[9px] bg-emeraldAccent/10 text-emeraldBright font-medium px-1.5 py-0.5 rounded-md border border-emeraldAccent/30">Zero-Knowledge</span>
+                    </h1>
+                </div>
             </div>
         </div>
 
@@ -275,8 +286,13 @@
                                     <i class="fa-solid fa-box-archive"></i> <span id="archiveBtnText">Arsipkan</span>
                                 </button>
                                 <button type="button" id="btnDeleteItem"
-                                    class="text-xs text-roseDestructive hover:bg-roseDestructive/10 border border-roseDestructive/30 px-3 py-1.5 rounded-lg transition">
+                                    class="text-xs text-roseDestructive hover:bg-roseDestructive/10 border border-roseDestructive/30 px-3 py-1.5 rounded-lg transition"
+                                    title="Hapus Item">
                                     <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button type="button" id="btnCancelEdit"
+                                    class="text-xs bg-surfaceElevated hover:bg-slate-800 text-slate-300 border border-borderHairline px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-xmark text-xs"></i> Batal
                                 </button>
                                 <button type="submit" id="btnSaveItem"
                                     class="text-xs bg-emeraldAccent hover:bg-emeraldBright text-slate-950 font-bold px-4 py-1.5 rounded-lg transition">
@@ -859,6 +875,40 @@
                 </button>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Iconic Modern Action Loading Overlay -->
+    <div id="actionLoadingOverlay"
+        class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
+        <div
+            class="relative flex flex-col items-center bg-surfaceCard border border-borderStandard/80 px-8 py-6 rounded-2xl shadow-2xl max-w-xs w-full text-center">
+
+            <!-- Radar Ring & Dynamic Icon Container -->
+            <div class="relative w-16 h-16 flex items-center justify-center mb-4">
+                <!-- Outer Rotating Dashed Ring -->
+                <div id="loadingRadarRing"
+                    class="absolute inset-0 rounded-full border-2 border-dashed border-emeraldAccent/40 animate-spin">
+                </div>
+                <!-- Inner Pulse Glow -->
+                <div id="loadingPulseGlow" class="absolute inset-2 rounded-full bg-emeraldAccent/10 animate-pulse">
+                </div>
+                <!-- Dynamic Center Icon -->
+                <i id="loadingActionIcon" class="fa-solid fa-lock text-xl text-emeraldBright relative z-10"></i>
+            </div>
+
+            <!-- Status Text -->
+            <h3 id="loadingActionTitle" class="font-brand font-bold text-sm text-white tracking-wide">Memproses
+                Enkripsi...</h3>
+            <p id="loadingActionSubtitle" class="text-[11px] text-slate-400 font-mono mt-1">Mengamankan data ke backend
+            </p>
+
+            <!-- Micro Security Badge -->
+            <div
+                class="mt-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-canvas/60 border border-borderHairline text-[9px] font-mono text-slate-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-emeraldBright animate-ping"></span>
+                <span>AES-256-GCM Hardware Lock</span>
+            </div>
         </div>
     </div>
 </body>

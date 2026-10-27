@@ -211,6 +211,27 @@ btnToggleCardCvv.onclick = () => {
     cardCvv.type = cardCvv.type === "password" ? "text" : "password";
 };
 
+// >>>> TAMBAHKAN KODE INI TEPAT DI BAWAHNYA >>>>
+cardNumber.addEventListener("input", (e) => {
+    // 1. Ambil hanya digit angka, batasi maksimal 19 digit (standar nomor kartu)
+    const rawDigits = e.target.value.replace(/\D/g, "").substring(0, 19);
+
+    // 2. Format menjadi kelompok 4 digit dipisah spasi (xxxx xxxx xxxx xxxx)
+    const formatted = rawDigits.match(/.{1,4}/g)?.join(" ") || "";
+    e.target.value = formatted;
+
+    // 3. Deteksi brand kartu otomatis berdasarkan digit awalan
+    if (rawDigits.startsWith("4")) {
+        cardBrand.value = "Visa";
+    } else if (/^5[1-5]/.test(rawDigits) || /^2[2-7]/.test(rawDigits)) {
+        cardBrand.value = "Mastercard";
+    } else if (/^3[47]/.test(rawDigits)) {
+        cardBrand.value = "American Express";
+    } else if (/^35/.test(rawDigits)) {
+        cardBrand.value = "JCB";
+    }
+});
+
 let isLoginMode = true;
 
 // Toast Helper
@@ -251,7 +272,21 @@ tabRegister.onclick = () => {
 authForm.onsubmit = async (e) => {
     e.preventDefault();
     const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value;
+    const password = authPasswordInput.value;
+
+    // Validasi Email Gmail
+    if (!DataValidator.isValidGmail(email)) {
+        showToast("Email harus menggunakan domain @gmail.com", true);
+        document.getElementById("authEmail").focus();
+        return;
+    }
+
+    // Validasi Master Password
+    if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
+        showToast("Master Password minimal 8 karakter dan kombinasi huruf & angka", true);
+        authPasswordInput.focus();
+        return;
+    }
 
     btnAuthSubmit.disabled = true;
     btnAuthText.innerText = "Menderivasi Kunci PBKDF2...";
@@ -294,9 +329,27 @@ authForm.onsubmit = async (e) => {
 
 // Fetch Vault
 async function fetchAndDecryptVault() {
+    // Render Loading Skeleton 4 Baris
     itemList.innerHTML = `
-    <div class="p-6 text-center text-xs text-slate-500 font-mono">
-      <i class="fa-solid fa-spinner fa-spin mr-1"></i> Mendekripsi data vault...
+    <div class="space-y-2 p-1">
+      ${[1, 2, 3, 4, 5].map(() => `
+        <div class="p-2.5 rounded-xl border border-borderHairline bg-surfaceCard flex items-center justify-between">
+          <div class="flex items-center space-x-3 flex-1 min-w-0">
+            <!-- Avatar Shimmer -->
+            <div class="w-7 h-7 rounded-lg skeleton-shimmer shrink-0"></div>
+            <!-- Title & Subtitle Shimmer -->
+            <div class="space-y-1.5 flex-1 pr-4">
+              <div class="h-3 w-1/3 rounded-md skeleton-shimmer"></div>
+              <div class="h-2 w-1/2 rounded-md skeleton-shimmer"></div>
+            </div>
+          </div>
+          <!-- Action Button Shimmer -->
+          <div class="flex space-x-1 shrink-0">
+            <div class="w-6 h-6 rounded-lg skeleton-shimmer"></div>
+            <div class="w-6 h-6 rounded-lg skeleton-shimmer"></div>
+          </div>
+        </div>
+      `).join('')}
     </div>
   `;
 
@@ -331,6 +384,12 @@ async function fetchAndDecryptVault() {
         renderFilteredVault();
     } catch (err) {
         showToast("Gagal memuat vault: " + err.message, true);
+        itemList.innerHTML = `
+      <div class="p-8 text-center text-xs text-roseDestructive">
+        <i class="fa-solid fa-triangle-exclamation text-xl mb-2"></i>
+        <p>Gagal memuat data dari server.</p>
+      </div>
+    `;
     }
 }
 
@@ -632,20 +691,102 @@ itemForm.onsubmit = async (e) => {
     const type = itemType.value;
     const isArchived = isArchivedState.value === "true";
 
+    if (!title) {
+        showToast("Nama item wajib diisi!", true);
+        itemTitle.focus();
+        return;
+    }
+
+    // === 1. VALIDASI KHUSUS TIPE LOGIN ===
+    if (type === "login") {
+        const rawUrl = itemUrl.value.trim();
+        if (rawUrl && !DataValidator.isValidHttpsUrl(rawUrl)) {
+            showToast("Link URL wajib diawali https:// (contoh: https://mail.google.com)", true);
+            itemUrl.focus();
+            return;
+        }
+
+        const rawUser = itemUsername.value.trim();
+        // Jika username diisi format email, wajib @gmail.com
+        if (rawUser.includes("@") && !DataValidator.isValidGmail(rawUser)) {
+            showToast("Username email harus berakhiran @gmail.com", true);
+            itemUsername.focus();
+            return;
+        }
+
+        if (!itemPassword.value) {
+            showToast("Password akun tidak boleh kosong!", true);
+            itemPassword.focus();
+            return;
+        }
+    }
+
+    // === 2. VALIDASI KHUSUS TIPE KARTU (CARD) ===
+    if (type === "card") {
+        if (!cardHolder.value.trim()) {
+            showToast("Nama pemilik kartu (Cardholder name) wajib diisi!", true);
+            cardHolder.focus();
+            return;
+        }
+
+        const rawNum = cardNumber.value.replace(/[\s-]/g, "");
+        if (!DataValidator.isValidLuhnCard(rawNum)) {
+            showToast("Nomor kartu kredit/debit tidak valid (Gagal periksa algoritma Luhn)!", true);
+            cardNumber.focus();
+            return;
+        }
+
+        if (!DataValidator.isValidCardExpiry(cardExpMonth.value, cardExpYear.value)) {
+            showToast("Masa berlaku kartu kedaluwarsa atau format tahun/bulan tidak valid!", true);
+            cardExpYear.focus();
+            return;
+        }
+
+        if (!DataValidator.isValidCvv(cardCvv.value)) {
+            showToast("Security code (CVV) harus 3 atau 4 digit angka!", true);
+            cardCvv.focus();
+            return;
+        }
+    }
+
+    // === 3. VALIDASI KHUSUS TIPE IDENTITAS (IDENTITY) ===
+    if (type === "identity") {
+        if (!idFirstName.value.trim()) {
+            showToast("Nama depan (First Name) wajib diisi!", true);
+            idFirstName.focus();
+            return;
+        }
+
+        if (idEmail.value.trim() && !DataValidator.isValidGmail(idEmail.value)) {
+            showToast("Email identitas harus berakhiran @gmail.com!", true);
+            idEmail.focus();
+            return;
+        }
+
+        if (idPhone.value.trim() && !DataValidator.isValidPhone(idPhone.value)) {
+            showToast("Format nomor telepon tidak valid! Gunakan format 08... atau +62...", true);
+            idPhone.focus();
+            return;
+        }
+
+        if (idSsn.value.trim() && !DataValidator.isValidNik(idSsn.value)) {
+            showToast("Nomor identitas KTP/NIK harus tepat 16 digit angka!", true);
+            idSsn.focus();
+            return;
+        }
+    }
+
     const plainPayload = {
         type: type,
-        // Field Login / SSH
         username: itemUsername.value,
         password: itemPassword.value,
         url: itemUrl.value,
-        // Field Card
         cardHolder: cardHolder.value,
         cardNumber: cardNumber.value,
         cardBrand: cardBrand.value,
         cardExpMonth: cardExpMonth.value,
         cardExpYear: cardExpYear.value,
         cardCvv: cardCvv.value,
-        // Field Identity
         idTitle: idTitleSelect.value,
         firstName: idFirstName.value,
         middleName: idMiddleName.value,
@@ -657,12 +798,11 @@ itemForm.onsubmit = async (e) => {
         phone: idPhone.value,
         email: idEmail.value,
         address: idAddress.value,
-        // Catatan
         notes: itemNotes.value
     };
 
     btnSaveItem.disabled = true;
-    btnSaveItem.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    ActionLoader.show("save", id ? "Memperbarui Kredensial..." : "Menyimpan Data Baru...");
 
     try {
         const encrypted = await CryptoEngine.encryptData(state.masterKey, plainPayload);
@@ -692,7 +832,7 @@ itemForm.onsubmit = async (e) => {
         showToast("Gagal menyimpan: " + err.message, true);
     } finally {
         btnSaveItem.disabled = false;
-        btnSaveItem.innerText = "Simpan";
+        ActionLoader.hide();
     }
 };
 
@@ -717,8 +857,11 @@ btnAutofillTop.onclick = () => triggerAutofill(state.activeItem);
 // Clone
 btnCloneItem.onclick = async () => {
     if (!state.activeItem) return;
+
+    btnCloneItem.disabled = true;
+    ActionLoader.show("clone", `Menduplikasi "${state.activeItem.title}"...`);
+
     try {
-        showToast("Menduplikasi item...");
         const encrypted = await CryptoEngine.encryptData(state.masterKey, state.activeItem.data);
 
         await GasBridge.request({
@@ -739,6 +882,9 @@ btnCloneItem.onclick = async () => {
         await fetchAndDecryptVault();
     } catch (err) {
         showToast("Gagal clone: " + err.message, true);
+    } finally {
+        btnCloneItem.disabled = false;
+        ActionLoader.hide();
     }
 };
 
@@ -746,6 +892,9 @@ btnCloneItem.onclick = async () => {
 btnArchiveToggle.onclick = async () => {
     if (!state.activeItem) return;
     const targetArchived = !state.activeItem.isArchived;
+
+    btnArchiveToggle.disabled = true;
+    ActionLoader.show("archive", targetArchived ? "Memindahkan ke Arsip..." : "Membuka dari Arsip...");
 
     try {
         await GasBridge.request({
@@ -762,6 +911,9 @@ btnArchiveToggle.onclick = async () => {
         emptyView.classList.remove("hidden");
     } catch (err) {
         showToast("Gagal mengubah arsip: " + err.message, true);
+    } finally {
+        btnArchiveToggle.disabled = false;
+        ActionLoader.hide();
     }
 };
 
@@ -769,7 +921,11 @@ btnArchiveToggle.onclick = async () => {
 btnDeleteItem.onclick = async () => {
     if (!state.activeItem) return;
     const isConfirmed = await CustomDialog.confirmDelete(state.activeItem.title);
+
     if (isConfirmed) {
+        btnDeleteItem.disabled = true;
+        ActionLoader.show("delete", `Menghapus "${state.activeItem.title}"...`);
+
         try {
             await GasBridge.request({
                 action: "deleteItem",
@@ -785,6 +941,9 @@ btnDeleteItem.onclick = async () => {
             await fetchAndDecryptVault();
         } catch (err) {
             showToast("Gagal menghapus: " + err.message, true);
+        } finally {
+            btnDeleteItem.disabled = false;
+            ActionLoader.hide();
         }
     }
 };
@@ -1047,3 +1206,154 @@ window.addEventListener("DOMContentLoaded", async () => {
         sessionStorage.removeItem("lockvault_session");
     }
 });
+
+// 1. Deklarasi tombol Cancel
+const btnCancelEdit = document.getElementById("btnCancelEdit");
+
+// 2. Event Handler klik Batal / Cancel
+btnCancelEdit.onclick = () => {
+    // Reset item yang sedang dipilih
+    state.activeItem = null;
+
+    // Sembunyikan form dan tampilkan kembali empty view
+    itemForm.classList.add("hidden");
+    emptyView.classList.remove("hidden");
+
+    // Render ulang list agar highlight/indikator aktif pada kartu item hilang
+    renderFilteredVault();
+
+    // Untuk tampilan layar mobile, kembali ke daftar item
+    if (window.innerWidth < 768) {
+        detailPane.classList.add("hidden");
+        listPane.classList.remove("hidden");
+    }
+};
+
+/**
+ * Modern Iconic Action Loading Controller
+ */
+class ActionLoader {
+    static show(actionType = "save", customTitle = null) {
+        const overlay = document.getElementById("actionLoadingOverlay");
+        const icon = document.getElementById("loadingActionIcon");
+        const title = document.getElementById("loadingActionTitle");
+        const sub = document.getElementById("loadingActionSubtitle");
+        const ring = document.getElementById("loadingRadarRing");
+        const glow = document.getElementById("loadingPulseGlow");
+
+        if (actionType === "save") {
+            icon.className = "fa-solid fa-shield-halved text-xl text-emeraldBright relative z-10";
+            ring.className = "absolute inset-0 rounded-full border-2 border-dashed border-emeraldAccent/50 animate-spin";
+            glow.className = "absolute inset-2 rounded-full bg-emeraldAccent/15 animate-pulse";
+            title.innerText = customTitle || "Menyimpan & Mengenkripsi...";
+            sub.innerText = "Mengunci data dengan AES-GCM 256-bit";
+        } else if (actionType === "clone") {
+            icon.className = "fa-regular fa-clone text-xl text-skyAction relative z-10";
+            ring.className = "absolute inset-0 rounded-full border-2 border-dashed border-skyAction/50 animate-spin";
+            glow.className = "absolute inset-2 rounded-full bg-skyAction/15 animate-pulse";
+            title.innerText = customTitle || "Menduplikasi Kredensial...";
+            sub.innerText = "Membuat payload terenkripsi baru";
+        } else if (actionType === "archive") {
+            icon.className = "fa-solid fa-box-archive text-xl text-amberWarning relative z-10";
+            ring.className = "absolute inset-0 rounded-full border-2 border-dashed border-amberWarning/50 animate-spin";
+            glow.className = "absolute inset-2 rounded-full bg-amberWarning/15 animate-pulse";
+            title.innerText = customTitle || "Memperbarui Arsip...";
+            sub.innerText = "Sinkronisasi status brankas";
+        } else if (actionType === "delete") {
+            icon.className = "fa-solid fa-trash-can text-xl text-roseDestructive relative z-10";
+            ring.className = "absolute inset-0 rounded-full border-2 border-dashed border-roseDestructive/50 animate-spin";
+            glow.className = "absolute inset-2 rounded-full bg-roseDestructive/15 animate-pulse";
+            title.innerText = customTitle || "Menghapus Permanen...";
+            sub.innerText = "Menghapus rekaman dari Google Sheets";
+        }
+
+        overlay.classList.remove("hidden", "pointer-events-none");
+        setTimeout(() => {
+            overlay.classList.remove("opacity-0");
+        }, 10);
+    }
+
+    static hide() {
+        const overlay = document.getElementById("actionLoadingOverlay");
+        overlay.classList.add("opacity-0");
+        setTimeout(() => {
+            overlay.classList.add("hidden", "pointer-events-none");
+        }, 200);
+    }
+}
+
+/**
+ * Modern Strict Data Validator Engine
+ */
+class DataValidator {
+    // 1. Validasi Email wajib @gmail.com
+    static isValidGmail(email) {
+        if (!email) return false;
+        const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+        return re.test(email.trim());
+    }
+
+    // 2. Validasi URL wajib diawali https://
+    static isValidHttpsUrl(url) {
+        if (!url) return false;
+        try {
+            const parsed = new URL(url.trim());
+            return parsed.protocol === "https:" && parsed.hostname.includes(".");
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // 3. Algoritma Luhn Checksum untuk Nomor Kartu
+    static isValidLuhnCard(numStr) {
+        const clean = numStr.replace(/\D/g, "");
+        if (clean.length < 13 || clean.length > 19) return false;
+
+        let sum = 0;
+        let shouldDouble = false;
+        for (let i = clean.length - 1; i >= 0; i--) {
+            let digit = parseInt(clean.charAt(i), 10);
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+        return sum % 10 === 0;
+    }
+
+    // 4. Validasi Masa Berlaku Kartu (Bulan & Tahun)
+    static isValidCardExpiry(month, year) {
+        if (!month || !year) return false;
+        const y = parseInt(year, 10);
+        const m = parseInt(month, 10);
+        if (isNaN(y) || isNaN(m) || m < 1 || m > 12) return false;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+
+        if (y < currentYear) return false;
+        if (y === currentYear && m < currentMonth) return false;
+        if (y > currentYear + 25) return false; // Maksimal 25 tahun ke depan
+        return true;
+    }
+
+    // 5. Validasi CVV (3 atau 4 digit)
+    static isValidCvv(cvv) {
+        return /^\d{3,4}$/.test(cvv.trim());
+    }
+
+    // 6. Validasi NIK / KTP (16 Digit Angka)
+    static isValidNik(nik) {
+        if (!nik) return true; // Opsional jika dikosongkan
+        return /^\d{16}$/.test(nik.trim());
+    }
+
+    // 7. Validasi Nomor Telepon (+62 atau 08)
+    static isValidPhone(phone) {
+        if (!phone) return true; // Opsional jika dikosongkan
+        return /^(\+62|62|0)8[1-9][0-9]{6,11}$/.test(phone.trim().replace(/[\s-]/g, ""));
+    }
+}
